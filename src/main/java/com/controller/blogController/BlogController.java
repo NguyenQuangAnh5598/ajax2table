@@ -1,6 +1,8 @@
 package com.controller.blogController;
 
 import com.model.Blog;
+import com.model.Category;
+import com.service.CategoryService.ICategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,14 @@ import java.util.Optional;
 public class BlogController {
     @Autowired
     private IBlogService blogService;
+
+    @Autowired
+    private ICategoryService categoryService;
+
+    @ModelAttribute("categoryList")
+    public Iterable<Category> categoryList() {
+        return categoryService.findAll();
+    }
 
 
     @PostMapping("/create")
