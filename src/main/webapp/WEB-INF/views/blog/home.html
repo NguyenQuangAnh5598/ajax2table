@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        function addNewBlog() {
+            let title = $('#title').val();
+            let content = $('#content').val();
+            let category = $('#category').val();
+            let newBlog = {
+                title: title,
+                content: content,
+                category: {
+                    id: category
+                }
+            };
+
+            $.ajax({
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                type: "POST",
+                data: JSON.stringify(newBlog),
+                url: "/blog/create",
+                success: successHandler
+            })
+            event.preventDefault();
+        }
+
+        function getBlog(blog) {
+            return `<tr><td >${blog.title}</td>
+                    <td >${blog.content}</td>
+                    <td>${blog.category?.name}</td>` +
+                  `<td><button type="submit"  value="${blog.id}" onclick="deleteBlog(this)">Delete</button></td></tr>`;
+        }
+
+        function successHandler() {
+            $.ajax({
+                type: "GET",
+                url: "/blog/list",
+                success: function (data) {
+                    let con = '<tr>\n' +
+                        '<td>Title</td>\n' +
+                        '<td>Content</td>\n' +
+                        '<td>Category</td>>\n' +
+                        '<td>Edit</td>' +
+                        '<td>Delete</td>'
+                    '</tr>';
+                    for (let i = 0; i < data.length; i++) {
+                        con += getBlog(data[i]);
+                    }
+                    document.getElementById("blogList").innerHTML = con;
+                }
+            })
+        }
+
+        function deleteBlog(a) {
+            let id = a.getAttribute("value");
+            $.ajax({
+                type: "DELETE",
+                url: "/blog/delete" + id,
+                success: function () {
+                    a.parentElement.parentElement.remove();
+                }
+            })
+            event.preventDefault();
+        }
+
+        function updateBlog(a) {
+            let id = a.getAttribute("value");
+            let title = $('#title').val();
+            let content = $('#content').val();
+            let category = $('#category').val();
+            let newBlog = {
+                id : id,
+                title: title,
+                content: content,
+                category: {
+                    id: category
+                }
+            };
+            $.ajax({
+                type : "PUT",
+                data: JSON.stringify(newBlog),
+                url : "/blog/update" + id,
+
+                success : successHandler
+            })
+        }
+
+        // function update() {
+        //     let id = $('#newId').val();
+        //     let tilte = $('#newTitle').val();
+        //     let content = $('#newContent').val();
+        //     let category = $('#newCategory').val();
+        //     let newBlog = {
+        //         id: id,
+        //         title: tilte,
+        //         content: content,
+        //         category: {
+        //             id: category
+        //         }
+        //     };
+        //         $.ajax({
+        //             headers: {
+        //                 'Accept': 'application/json',
+        //                 'Content-Type': 'application/json'
+        //             },
+        //             type: "PUT",
+        //             data: JSON.stringify(newBlog),
+        //             url: "/",
+        //             enctype : 'multipart/form-data',
+        //             success: successHandler
+        //         })
+        //     event.preventDefault();
+        // }
+    </script>
+</head>
+<body>
+<h1>BLOGS</h1>
+<form id="add-blog">
+    <table>
+        <tr>
+            <td>Title :</td>
+            <td><input type="text" id="title" placeholder="title"></td>
+        </tr>
+        <tr>
+            <td>Content :</td>
+            <td><input type="text" id="content" placeholder="content"></td>
+        </tr>
+        <tr>
+            <td>Category :</td>
+            <td>
+                <select>
+                    <option id="category" th:each="cate : ${categoryList}" th:value="${cate.id}"
+                            th:text="${cate.name}"></option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="submit" value="Add" onclick="addNewBlog()"></td>
+        </tr>
+    </table>
+</form>
+<table border="1">
+    <tr>
+        <th>Title</th>
+        <th>Content</th>
+        <th>Category</th>
+        <th>Edit</th>
+        <th>Delete</th>
+    </tr>
+    <tr th:each="blog : ${blogList}">
+        <td th:text = "${blog.title}"></td>
+        <td th:text="${blog.content}"></td>
+        <td th:text="${blog.category.getName()}"></td>
+        <td><a th:href="@{/edit/__${blog.id}__}">Edit</a></td>
+        <td><button type="submit" th:value="blog.id" onclick="deleteBlog(this)">Delete</button></td>
+    </tr>
+</table>
+</body>
+</html>
