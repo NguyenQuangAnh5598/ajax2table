@@ -34,6 +34,15 @@ public class BlogController {
         return new ResponseEntity<>(blogService.save(blog), HttpStatus.CREATED);
     }
 
+    @GetMapping("/one/{id}")
+    public ResponseEntity<Blog> findById(@PathVariable Long id) {
+        Optional<Blog> blogOptional = blogService.findByID(id);
+        if (!blogOptional.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(blogOptional.get(), HttpStatus.OK);
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Blog> deleteBlog(@PathVariable Long id) {
         Optional<Blog> blog = blogService.findByID(id);
@@ -47,7 +56,7 @@ public class BlogController {
     @GetMapping("/home")
     public ModelAndView showList() {
         ModelAndView modelAndView = new ModelAndView("/blog/home");
-        modelAndView.addObject("blogList",blogService.findAll());
+        modelAndView.addObject("blogList", blogService.findAll());
         return modelAndView;
     }
 
@@ -55,9 +64,9 @@ public class BlogController {
     public ResponseEntity<Iterable<Blog>> list() {
         List<Blog> blogList = (List<Blog>) blogService.findAll();
         if (blogList.isEmpty()) {
-   return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(blogList,HttpStatus.OK);
+        return new ResponseEntity<>(blogList, HttpStatus.OK);
     }
 
     @PutMapping("/update/{id}")
@@ -67,6 +76,6 @@ public class BlogController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         blog.setId(blogOptional.get().getId());
-        return new ResponseEntity<>(blogService.save(blog),HttpStatus.OK);
+        return new ResponseEntity<>(blogService.save(blog), HttpStatus.OK);
     }
 }

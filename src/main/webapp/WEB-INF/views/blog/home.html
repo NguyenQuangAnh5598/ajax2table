@@ -34,10 +34,10 @@
             return `<tr><td >${blog.title}</td>
                     <td >${blog.content}</td>
                     <td>${blog.category?.name}</td>` +
-                  `<td><button type="submit"  value="${blog.id}" onclick="deleteBlog(this)">Delete</button></td></tr>`;
+                `<td><button type="submit"  value="${blog.id}" onclick="deleteBlog(this)">Delete</button></td></tr>`;
         }
 
-        function successHandler() {
+        function successHandler(data) {
             $.ajax({
                 type: "GET",
                 url: "/blog/list",
@@ -61,7 +61,7 @@
             let id = a.getAttribute("value");
             $.ajax({
                 type: "DELETE",
-                url: "/blog/delete" + id,
+                url: "/blog/delete/" + id,
                 success: function () {
                     a.parentElement.parentElement.remove();
                 }
@@ -69,13 +69,26 @@
             event.preventDefault();
         }
 
-        function updateBlog(a) {
+        function editForm(a) {
             let id = a.getAttribute("value");
+            $.ajax({
+                type: "GET",
+                url: "/blog/one/" + id,
+                success: function (blog) {
+                    $('#editTitle').val(blog.title);
+                    $('#editContent').val(blog.content);
+                    $('#editCategory').val(blog.category);
+                }
+            })
+            event.preventDefault();
+        }
+        function updateBlog() {
+            let id = $('#id').val();
             let title = $('#title').val();
             let content = $('#content').val();
             let category = $('#category').val();
             let newBlog = {
-                id : id,
+                id: id,
                 title: title,
                 content: content,
                 category: {
@@ -83,40 +96,14 @@
                 }
             };
             $.ajax({
-                type : "PUT",
+                type: "PUT",
                 data: JSON.stringify(newBlog),
-                url : "/blog/update" + id,
-
-                success : successHandler
+                url: "/blog/update/" + id,
+                success: successHandler
             })
         }
 
-        // function update() {
-        //     let id = $('#newId').val();
-        //     let tilte = $('#newTitle').val();
-        //     let content = $('#newContent').val();
-        //     let category = $('#newCategory').val();
-        //     let newBlog = {
-        //         id: id,
-        //         title: tilte,
-        //         content: content,
-        //         category: {
-        //             id: category
-        //         }
-        //     };
-        //         $.ajax({
-        //             headers: {
-        //                 'Accept': 'application/json',
-        //                 'Content-Type': 'application/json'
-        //             },
-        //             type: "PUT",
-        //             data: JSON.stringify(newBlog),
-        //             url: "/",
-        //             enctype : 'multipart/form-data',
-        //             success: successHandler
-        //         })
-        //     event.preventDefault();
-        // }
+
     </script>
 </head>
 <body>
@@ -142,11 +129,11 @@
         </tr>
         <tr>
             <td></td>
-            <td><input type="submit" value="Add" onclick="addNewBlog()"></td>
+            <td><input type="submit" value="AddNew" onclick="addNewBlog()"></td>
         </tr>
     </table>
 </form>
-<table border="1">
+<table border="1" id="blogList">
     <tr>
         <th>Title</th>
         <th>Content</th>
@@ -155,12 +142,43 @@
         <th>Delete</th>
     </tr>
     <tr th:each="blog : ${blogList}">
-        <td th:text = "${blog.title}"></td>
+        <td th:text="${blog.title}"></td>
         <td th:text="${blog.content}"></td>
-        <td th:text="${blog.category.getName()}"></td>
-        <td><a th:href="@{/edit/__${blog.id}__}">Edit</a></td>
-        <td><button type="submit" th:value="blog.id" onclick="deleteBlog(this)">Delete</button></td>
+        <td th:if="${blog.category}" th:text="${blog.category.getName()}"></td>
+        <td th:unless="${blog.category}"></td>
+        <td>
+            <button type="submit" th:value="${blog.id}" onclick="deleteBlog(this)">Delete</button>
+        </td>
+        <td>
+            <button type="submit" th:value="${blog.id}" onclick="editForm(this)">Edit</button>
+        </td>
     </tr>
 </table>
+<form id="editForm">
+    <table>
+        <tr>
+            <td>Title :</td>
+            <td><input type="text" id="editTitle"></td>
+        </tr>
+        <tr>
+            <td>Content :</td>
+            <td><input type="text" id="editContent"></td>
+        </tr>
+        <tr>
+            <td>Category :</td>
+            <td>
+                <select>
+                    <option id="editCategory" th:each="cate : ${categoryList}" th:value="${cate.id}"
+                            th:text="${cate.name}"></option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="submit" value="Update" onclick="updateBlog()"></td>
+        </tr>
+    </table>
+</form>
+
 </body>
 </html>

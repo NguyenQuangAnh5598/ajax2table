@@ -29,6 +29,7 @@ public class CategoryController {
     return modelAndView;
 }
 
+
 @GetMapping("/list")
     public ResponseEntity<Iterable<Category>> showAllCategory() {
     List<Category> categoryList = (List<Category>) categoryService.findAll();
